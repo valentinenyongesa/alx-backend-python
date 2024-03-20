@@ -1,36 +1,35 @@
 #!/usr/bin/env python3
 
-"""Take the code from wait_n and
-alter it into a new function task_wait_n"""
 
 import asyncio
-from typing import Union
+from typing import List
+from asyncio import Task
+
+task_wait_random = __import__('4-tasks').task_wait_random
 
 
-async def wait_random(max_delay: int = 10) -> Union[int, float]:
+async def task_wait_n(n: int, max_delay: int) -> List[float]:
     """
-    Asynchronous coroutine that waits for a random delay and returns it.
+    Asynchronous routine that spawns
+    task_wait_random n times with the specified max_delay.
 
     Args:
-        max_delay (int): The maximum delay in seconds. Defaults to 10.
+        n (int): Number of times to spawn task_wait_random.
+        max_delay (int): The maximum delay in
+        seconds for each task_wait_random.
 
     Returns:
-        Union[int, float]: The random delay in seconds.
+        List[float]: List of all the delays in ascending order.
     """
-    delay = random.uniform(0, max_delay)
-    await asyncio.sleep(delay)
-    return delay
+    delays: List[float] = []
+    tasks: List[Task] = []
 
+    for _ in range(n):
+        task = task_wait_random(max_delay)
+        tasks.append(task)
 
-def task_wait_random(max_delay: int) -> asyncio.Task:
-    """
-    Regular function that creates an asyncio.Task for wait_random coroutine.
+    for task in tasks:
+        delay = await task
+        delays.append(delay)
 
-    Args:
-        max_delay (int): The maximum delay in seconds for wait_random.
-
-    Returns:
-        asyncio.Task: The asyncio.Task object for wait_random.
-    """
-    task = asyncio.create_task(wait_random(max_delay))
-    return task
+    return delays
