@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Module containing unit tests for utils.access_nested_map function.
+Unit tests for utils.access_nested_map
 """
-
 import unittest
 from parameterized import parameterized
 from utils import access_nested_map
@@ -10,7 +9,7 @@ from utils import access_nested_map
 
 class TestAccessNestedMap(unittest.TestCase):
     """
-    Test case for access_nested_map function.
+    Class to test access_nested_map function
     """
 
     @parameterized.expand([
@@ -20,10 +19,22 @@ class TestAccessNestedMap(unittest.TestCase):
     ])
     def test_access_nested_map(self, nested_map, path, expected):
         """
-        Test access_nested_map function for different inputs.
+        Test access_nested_map function
         """
         self.assertEqual(access_nested_map(nested_map, path), expected)
 
+    @parameterized.expand([
+        ({}, ("a",), "Key not found: 'a'"),
+        ({"a": 1}, ("a", "b"), "Key not found: 'b' in {'a': 1}")
+    ])
+    def test_access_nested_map_exception(self, nested_map, path, expected_msg):
+        """
+        Test access_nested_map function raises KeyError
+        """
+        with self.assertRaises(KeyError) as context:
+            access_nested_map(nested_map, path)
+        self.assertEqual(str(context.exception), expected_msg)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     unittest.main()
