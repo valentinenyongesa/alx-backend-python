@@ -4,7 +4,6 @@ Unit tests for client.GithubOrgClient
 """
 import unittest
 from unittest.mock import patch
-from parameterized import parameterized
 from client import GithubOrgClient
 
 
@@ -13,27 +12,25 @@ class TestGithubOrgClient(unittest.TestCase):
     Class to test GithubOrgClient class
     """
 
-    @parameterized.expand([
-        ("google",),
-        ("abc",)
-    ])
-    @patch('client.GithubOrgClient.get_json')
-    def test_org(self, org_name, mock_get_json):
+    def test_public_repos_url(self):
         """
-        Test GithubOrgClient.org method
+        Test GithubOrgClient._public_repos_url method
         """
-        # Instantiate GithubOrgClient with org_name
-        client = GithubOrgClient(org_name)
+        # Define a known payload
+        payload = {"repos_url": "https://api.github.com/orgs/test/repos"}
 
-        # Call org method
-        result = client.org()
+        # Patch GithubOrgClient.org to return known payload
+        with patch('client.GithubOrgClient.org', return_value=payload):
+            # Create instance of GithubOrgClient
+            client = GithubOrgClient('test')
 
-        # Assert that get_json was called once with the correct argument
-        mock_get_json.assert_called_once_with(
-            f'https://api.github.com/orgs/{org_name}'
-        )
-        # Ensure that the result is equal to the return value of get_json
-        self.assertEqual(result, mock_get_json.return_value)
+            # Retrieve public repos URL
+            public_repos_url = client._public_repos_url
+
+            # Assert that the public repos URL is the expected one
+            self.assertEqual(
+                    public_repos_url, "https://api.github.com/orgs/test/repos"
+            )
 
 
 if __name__ == '__main__':
