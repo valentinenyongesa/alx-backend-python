@@ -6,13 +6,10 @@ Integration tests for GithubOrgClient class
 
 import unittest
 from unittest.mock import patch
-from parameterized import parameterized_class
 from client import GithubOrgClient
 from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
 
 
-@parameterized_class(('org_payload', 'repos_payload', 'expected_repos', 'apache2_repos'),
-                     [(org_payload(), repos_payload(), expected_repos(), apache2_repos())])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """
     Integration tests for GithubOrgClient class
@@ -21,34 +18,34 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        Set up the test class
+        Set up the test environment
         """
-        cls.get_patcher = patch('client.requests.get')
-
-        # Start patcher and mock requests.get with side_effect
-        cls.mock_get = cls.get_patcher.start()
-        cls.mock_get.side_effect = [cls.org_payload, cls.repos_payload]
-
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Tear down the test class
-        """
-        # Stop patcher
-        cls.get_patcher.stop()
+        cls.org_payload = org_payload()
+        cls.repos_payload = repos_payload()
+        cls.expected_repos = expected_repos()
+        cls.apache2_repos = apache2_repos()
 
     def test_public_repos(self):
         """
-        Test public_repos method
+        Test public_repos method without license argument
         """
-        # Create instance of GithubOrgClient
-        client = GithubOrgClient('test')
+        with patch('client.GithubOrgClient.org', return_value=self.org_payload), \
+             patch('client.GithubOrgClient._public_repos_url'), \
+             patch('client.GithubOrgClient.get_json', return_value=self.repos_payload):
+            client = GithubOrgClient('test')
+            repos = client.public_repos()
+            self.assertEqual(repos, self.expected_repos)
 
-        # Call public_repos method
-        repos = client.public_repos()
-
-        # Assert that the result is as expected
-        self.assertEqual(repos, self.expected_repos)
+    def test_public_repos_with_license(self):
+        """
+        Test public_repos method with license argument
+        """
+        with patch('client.GithubOrgClient.org', return_value=self.org_payload), \
+             patch('client.GithubOrgClient._public_repos_url'), \
+             patch('client.GithubOrgClient.get_json', return_value=self.apache2_repos):
+            client = GithubOrgClient('test')
+            repos = client.public_repos(license='apache-2.0')
+            self.assertEqual(repos, self.apache2_repos)
 
 
 if __name__ == '__main__':
