@@ -26,12 +26,14 @@ class TestGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient(org_name)
 
         # Call org method
-        client.org()
+        result = client.org()
 
         # Assert that get_json was called once with the correct argument
         mock_get_json.assert_called_once_with(
-                f'https://api.github.com/orgs/{org_name}'
-                )
+            f'https://api.github.com/orgs/{org_name}'
+        )
+        # Ensure that the result is equal to the return value of get_json
+        self.assertEqual(result, mock_get_json.return_value)
 
 
 if __name__ == '__main__':
